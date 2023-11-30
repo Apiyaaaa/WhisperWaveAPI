@@ -11,7 +11,7 @@ def get_date_range(period):
     today = datetime.datetime.now().replace(
         hour=0, minute=0, second=0, microsecond=0)
     if period == 'daily':
-        start_date = today - datetime.timedelta(days=1)
+        start_date = today - datetime.timedelta(days=2)
     elif period == 'weekly':
         start_date = today - datetime.timedelta(days=7)
     elif period == 'monthly':
@@ -23,22 +23,26 @@ def get_date_range(period):
 
 def get_feed(period):
     start_date, end_date = get_date_range(period)
-    parameter_hash = hash((start_date, end_date, period))
-    # TODO 用hash判断mongodb中是否有缓存
-    # 如果有缓存，直接返回缓存
-    # 如果没有缓存，计算新闻聚类，返回聚类结果
+    filter = {
+        'start_date': start_date,
+        'end_date': end_date,
+        'period': period
+    }
     mongo_query = mongo.client['NewsSnap']['feed'].find_one(
-        {'parameter_hash': parameter_hash})
+        filter)
     if mongo_query is not None:
+
         return mongo_query['feed']
-    
+
     df = get_news_by_date(start_date, end_date)
     centers = cluster_news(df)
     feeds = get_news_by_vectors(centers, 100, period)
     # 将今天的feed_ids存入数据库
     mongo.client['NewsSnap']['feed'].insert_one({
         'feed': feeds,
-        'parameter_hash': parameter_hash
+        'start_date': start_date,
+        'end_date': end_date,
+        'period': period
     })
 
     return feeds
@@ -122,7 +126,7 @@ def cluster_news(df):
 def get_descs_abstract(titles):
     # TODO 用title生成类特征
     # 暂时先用第一条新闻的title
-    
+
     return titles[0]
 
 
@@ -144,7 +148,6 @@ def get_news_by_date(start_date, end_date, limit=1000):
             include_metadata=True,
             include_values=True
         )
-
         df = pd.DataFrame([news_item['metadata'] for news_item in news])
         df['score'] = [news_item['score'] for news_item in news]
         df['embedding'] = [news_item['values'] for news_item in news]
@@ -157,7 +160,6 @@ def get_news_by_date(start_date, end_date, limit=1000):
         return df
 
     except Exception as e:
-        print(e)
         return None
 
 
