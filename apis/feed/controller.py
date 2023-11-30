@@ -1,6 +1,7 @@
 from flask import Blueprint, request
 import json
 from apis.feed.service import get_feed
+import logging
 
 api_feed = Blueprint('api_feed', __name__)
 
@@ -13,7 +14,7 @@ def index():
         status = 1
         message = 'success'
     except Exception as e:
-        print(e)
+        logging.error(e)
         news = []
         status = 0
         message = '稍后再试'
