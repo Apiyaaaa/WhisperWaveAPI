@@ -13,6 +13,7 @@ def index():
         status = 1
         message = 'success'
     except Exception as e:
+        print(e)
         news = []
         status = 0
         message = '稍后再试'
