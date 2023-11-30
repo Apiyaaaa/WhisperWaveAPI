@@ -5,3 +5,4 @@ pinecone_client
 pymongo
 scikit_learn
 flask_cors
+openai

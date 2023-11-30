@@ -1,12 +1,53 @@
 from pymongo import MongoClient
 import pinecone
 import os
-import openai
+from openai import OpenAI
+
+# from dotenv import load_dotenv
+# load_dotenv()
 
 class MyOpenAI:
-    def __init__(self, openai_key):
-        openai.api_key = openai_key
-        self.summary_model = 'gpt3.5-turbo'
+    def __init__(self):
+        self.client = OpenAI()
+        self.cost = {
+            'chat': 0,
+            'embedding': 0,
+        }
+        self.price = {
+            'chat': 0.001/1000,
+            'embedding': 0.0001/1000,
+        }
+
+    def get_embedding(self, text):
+        try:
+            response = self.client.embeddings.create(
+                model="text-embedding-ada-002",
+                input=text,
+            )
+            self.cost['embedding'] += response.usage.total_tokens
+            return response.data[0].embedding
+        except Exception as e:
+            print(e)
+            return None
+
+    def chat(self, text, prompt):
+        try:
+            completion = self.client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": prompt},
+                    {"role": "user", "content": text}
+                ])
+            self.cost['chat'] += completion['usage']['total_tokens']
+            print(completion.choices[0].message)
+        except Exception as e:
+            print(e)
+            return None
+        
+    def get_cost(self):
+        chat_cost = self.cost['chat'] * self.price['chat']
+        embedding_cost = self.cost['embedding'] * self.price['embedding']
+        return chat_cost + embedding_cost
 
 
 class MyMongo:
@@ -56,3 +97,4 @@ class PineconeM:
 
 mypinecone = PineconeM(os.getenv('PINECONE_KEY'))
 mymongo = MyMongo(os.getenv('MONGODB_URI'))
+myopenai = MyOpenAI()

@@ -65,6 +65,7 @@ def get_news_by_vectors(tagged_vectors, limit=100, period='daily'):
 
             for news_item in news:
                 data = {
+                    'id': news_item['id'],
                     'title': news_item['metadata']['title'],
                     'link': news_item['metadata']['link'],
                     'source': news_item['metadata']['source'],
