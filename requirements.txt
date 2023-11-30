@@ -6,3 +6,4 @@ pymongo
 scikit_learn
 flask_cors
 openai
+python-dotenv
