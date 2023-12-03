@@ -3,8 +3,8 @@ import pinecone
 import os
 from openai import OpenAI
 
-# from dotenv import load_dotenv
-# load_dotenv()
+from dotenv import load_dotenv
+load_dotenv()
 
 class MyOpenAI:
     def __init__(self):
@@ -95,6 +95,6 @@ class PineconeM:
         return res['matches']
 
 
-mypinecone = PineconeM(os.getenv('PINECONE_KEY'))
-mymongo = MyMongo(os.getenv('MONGODB_URI'))
+mypinecone = PineconeM(os.getenv('PINECONE_KEY')).index
+mymongo = MyMongo(os.getenv('MONGODB_URI')).client
 myopenai = MyOpenAI()
