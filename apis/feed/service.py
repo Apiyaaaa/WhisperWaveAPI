@@ -1,7 +1,7 @@
 import logging
 from dbmanager import mymongo, mypinecone, myopenai
 from bson import json_util
-
+import json
 
 def get_feed(type):
     try:
@@ -12,7 +12,7 @@ def get_feed(type):
         if not feed or not feed['feed']:
             return None
         feed = feed
-        return json_util.dumps(feed)
+        return json.loads(json_util.dumps(feed))
     except Exception as e:
         logging.error(e)
         return None
